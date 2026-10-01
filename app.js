@@ -242,11 +242,22 @@
           h("p", {}, "Con tu nombre, la fecha y tu calificación. Descárgala cuando apruebes el examen."),
           exOk ? h("button", { class: "btn verde", onclick: abreConstancia }, "Ver mi constancia")
             : h("span", { class: "candado" }, ico("candado"), "Se abre al aprobar el examen"),
-          im("rino_trofeo", "rino-esq"))));
+          im("rino_trofeo", "rino-esq")),
+        h("div", { class: "tarjeta-final" },
+          h("span", { class: "eyebrow" }, "Para el descanso"),
+          h("h3", {}, "Tala y Siembra"),
+          h("p", {}, "Corta troncos por el lado sin rama y siembra antes de que se acabe el bosque. Cada 8 troncos son una hoja de triplay."),
+          h("p", { class: "num" }, `Tu mejor marca: ${mejorJuego()} troncos`),
+          h("button", { class: "btn", onclick: () => window.abrirJuego && window.abrirJuego(() => pintaInicio()) }, "Jugar"),
+          im("rino_triplay", "rino-esq"))));
 
     const eq = h("section", { id: "sec-equipo", hidden: !DB });
     app.replaceChildren(banda, h("main", {}, ruta, final, eq));
     pintaEquipo();
+  }
+
+  function mejorJuego() {
+    try { return parseInt(localStorage.getItem("talaysiembra.best") || "0", 10) || 0; } catch (e) { return 0; }
   }
 
   function tarjetaModulo(m, i) {
