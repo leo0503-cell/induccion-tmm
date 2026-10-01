@@ -170,8 +170,9 @@
     const saludo = h("div", { class: "saludo" });
     if (!S.nombre) {
       const nom = h("input", { id: "alta-nombre", autocomplete: "name", placeholder: "Nombre y apellido", maxlength: "60", required: true });
-      const area = h("select", { id: "alta-area" },
-        ["Ventas", "Almacén y logística", "Administración", "Compras", "Otra área"].map((a) => h("option", {}, a)));
+      const area = h("select", { id: "alta-area", required: true },
+        h("option", { value: "", disabled: true, selected: true }, "Elige tu área"),
+        ["Desarrollo Humano", "Dirección", "Subdirección", "Ventas", "Almacén", "Facturación", "Crédito y Cobranza", "Contabilidad", "Finanzas", "Logística", "Comercio Exterior", "Excelencia Operativa", "Marketing"].map((a) => h("option", {}, a)));
       saludo.append(
         h("h1", {}, "Bienvenido a tu ", h("em", {}, "inducción")),
         h("p", {}, `${MODS.length} módulos cortos sobre la empresa, nuestros productos y la forma en que vendemos. Unos ${minutos} minutos en total, a tu ritmo.`),
@@ -181,6 +182,7 @@
             e.preventDefault();
             const v = nom.value.trim().replace(/\s+/g, " ");
             if (!v) { nom.focus(); return; }
+            if (!area.value) { area.focus(); return; }
             S.nombre = v; S.area = area.value; guarda(); sincroniza(); pintaInicio();
           },
         },
