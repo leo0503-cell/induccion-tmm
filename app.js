@@ -251,11 +251,22 @@
           h("p", {}, "Corta troncos por el lado sin rama y siembra antes de que se acabe el bosque. Cada 8 troncos son una hoja de triplay."),
           h("p", { class: "num" }, `Tu mejor marca: ${mejorJuego()} troncos`),
           h("button", { class: "btn", onclick: () => window.abrirJuego && window.abrirJuego(() => pintaInicio()) }, "Jugar"),
-          im("rino_triplay", "rino-esq"))));
+          im("rino_triplay", "rino-esq")),
+        h("div", { class: "tarjeta-final" },
+          h("span", { class: "eyebrow" }, "Para el descanso"),
+          h("h3", {}, "Gran Tala Ags"),
+          h("p", {}, "Maneja el camión TMM con el Rino: tala, siembra, carga en el almacén y entrega pedidos por la ciudad. Cada cliente te hace una pregunta del curso."),
+          h("p", { class: "num" }, `Tu mejor jornada: ${mejorGranTala()} pts`),
+          h("button", { class: "btn", onclick: () => window.abrirGranTala && window.abrirGranTala(() => pintaInicio()) }, "Jugar"),
+          im("rino_heroe", "rino-esq"))));
 
     const eq = h("section", { id: "sec-equipo", hidden: !DB });
     app.replaceChildren(banda, h("main", {}, ruta, final, eq));
     pintaEquipo();
+  }
+
+  function mejorGranTala() {
+    try { return parseInt(localStorage.getItem("grantala.best") || "0", 10) || 0; } catch (e) { return 0; }
   }
 
   function mejorJuego() {
