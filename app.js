@@ -54,7 +54,17 @@
   const instalada = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   if (!EN_CLAUDE && "serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    /* Si llega una versión nueva mientras la app está abierta, recarga una sola vez. */
+    const habiaControl = !!navigator.serviceWorker.controller;
+    let recargando = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!habiaControl || recargando || document.querySelector(".player, .juego, .gta")) return;
+      recargando = true;
+      location.reload();
+    });
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").then((reg) => {
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+    }).catch(() => {}));
   }
   addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); promptInstalar = e; if (!P) pintaInicio(); });
   addEventListener("appinstalled", () => { promptInstalar = null; if (!P) pintaInicio(); });
