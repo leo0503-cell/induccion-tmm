@@ -288,6 +288,7 @@
   .gta .g-hud{position:absolute;inset:0;pointer-events:none}
   .gta .g-tl{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;flex-direction:column;gap:6px;align-items:flex-start;max-width:min(58vw,240px)}
   .gta .g-fila{display:flex;gap:6px;align-items:stretch}
+  .gta button{touch-action:manipulation}
   .gta .g-ico{pointer-events:auto;width:40px;min-height:40px;border-radius:10px;border:none;background:var(--g-panel);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
   .gta .g-ico svg{width:20px;height:20px}
   .gta .g-panel{background:var(--g-panel);border-radius:10px;padding:5px 10px 6px;line-height:1.05;min-width:86px}
@@ -331,7 +332,7 @@
   .gta .g-stick.guia{display:block;opacity:.45}
   .gta .g-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);background:rgba(6,25,38,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:2}
   .gta [hidden]{display:none!important}
-  .gta .g-card{position:relative;background:var(--sup,#fff);color:var(--tinta,#10202c);border-radius:18px;max-width:440px;width:100%;padding:20px 20px 18px;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);max-height:100%;overflow:auto;user-select:text;-webkit-user-select:text;touch-action:pan-y}
+  .gta .g-card{position:relative;background:var(--sup,#fff);color:var(--tinta,#10202c);border-radius:18px;max-width:440px;width:100%;padding:20px 20px 18px;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);max-height:100%;overflow:auto;overscroll-behavior:contain;user-select:text;-webkit-user-select:text;touch-action:pan-y}
   .gta .g-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue,#566876);font-weight:700}
   .gta .g-titulo{font-family:var(--display,${FUENTE});font-style:italic;font-weight:900;font-size:44px;line-height:.92;margin:4px 0 10px;color:var(--azul,#0079C1)}
   .gta .g-titulo em{color:#00B800;font-style:italic}
@@ -475,6 +476,32 @@
       mc = mini.getContext("2d");
     const ac = new AbortController();
     const sig = { signal: ac.signal };
+
+    // En el celular la pantalla no debe moverse ni hacer zoom mientras se juega:
+    // se fija la escala, se apaga el rebote de la página y se cancelan pellizcos y doble toque.
+    const vp = document.querySelector('meta[name="viewport"]');
+    const vpPrevio = vp ? vp.getAttribute("content") : null;
+    if (vp) vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+    const rebotePrevio = [document.documentElement.style.overscrollBehavior, document.body.style.overscrollBehavior];
+    document.documentElement.style.overscrollBehavior = document.body.style.overscrollBehavior = "none";
+    const enTarjeta = (e) => e.target && e.target.closest && e.target.closest(".g-card");
+    const sinGesto = (e) => e.preventDefault();
+    for (const ev of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(ev, sinGesto, { signal: ac.signal, passive: false });
+    raiz.addEventListener("touchmove", (e) => !enTarjeta(e) && e.preventDefault(), { signal: ac.signal, passive: false });
+    raiz.addEventListener("touchstart", (e) => e.touches.length > 1 && !enTarjeta(e) && e.preventDefault(), { signal: ac.signal, passive: false });
+    let ultimoToque = 0;
+    raiz.addEventListener(
+      "touchend",
+      (e) => {
+        if (enTarjeta(e) || (e.target.closest && e.target.closest("button"))) return;
+        const ahora = Date.now();
+        if (ahora - ultimoToque < 350) e.preventDefault();
+        ultimoToque = ahora;
+      },
+      { signal: ac.signal, passive: false },
+    );
+    raiz.addEventListener("dblclick", (e) => e.preventDefault(), sig);
+    window.scrollTo(0, 0);
     let cw = 1,
       ch = 1,
       dpr = 1;
@@ -3182,6 +3209,8 @@
       if (A.c) A.c.close().catch(() => {});
       raiz.remove();
       document.body.style.overflow = overflowPrevio;
+      if (vp && vpPrevio != null) vp.setAttribute("content", vpPrevio);
+      [document.documentElement.style.overscrollBehavior, document.body.style.overscrollBehavior] = rebotePrevio;
       G = null;
       if (alCerrar) alCerrar();
     }
