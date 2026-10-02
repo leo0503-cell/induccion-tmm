@@ -1083,4 +1083,17 @@
   }
 
   pintaInicio();
+
+  // Enlace directo al juego (lo usa el QR del cartel): ?juego=gran-tala
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("juego") === "gran-tala" && window.abrirGranTala) {
+      window.abrirGranTala(() => {
+        q.delete("juego");
+        const resto = q.toString();
+        history.replaceState(null, "", location.pathname + (resto ? "?" + resto : "") + location.hash);
+        pintaInicio();
+      });
+    }
+  } catch (e) { /* sin enlace directo */ }
 })();

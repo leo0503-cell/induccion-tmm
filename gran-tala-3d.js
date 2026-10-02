@@ -94,7 +94,7 @@
           this.p.push(x, y, z);
           this.n.push(nor.getX(i), nor.getY(i), nor.getZ(i));
           this.u.push(uv ? uv.getX(i) : 0, uv ? uv.getY(i) : 0);
-          const cc = grad ? grad(x, y, z) : color;
+          const cc = grad ? grad(x, y, z, nor.getX(i), nor.getY(i), nor.getZ(i)) : color;
           this.c.push(cc.r, cc.g, cc.b);
         }
         gg.dispose();
@@ -629,7 +629,7 @@
     const pinoGeo = mp.build();
     const matPino = lambert({ vertexColors: true, flatShading: true });
     const mt = new Malla();
-    mt.geo(new THREE.CylinderGeometry(6.5, 8, 10, 9), T(0, 5, 0), null, (x, y) => (y > 9.9 ? C("#e1bd86") : C("#7a5232")));
+    mt.geo(new THREE.CylinderGeometry(6.5, 8, 10, 9), T(0, 5, 0), null, (x, y, z, nx, ny) => (ny > 0.5 ? C("#e1bd86") : C("#7a5232")));
     const toconGeo = mt.build();
     const N = M.pinos.length;
     const pinos = new THREE.InstancedMesh(pinoGeo, matPino, N);
@@ -858,8 +858,8 @@
     camion.add(tablero);
     // Carga: 12 lugares en la caja
     const mlog = new Malla();
-    mlog.geo(new THREE.CylinderGeometry(4.8, 4.8, 18, 10), TRS(0, 0, 0, Math.PI / 2, 0, 0), null, (x, y, z) =>
-      Math.abs(z) > 8.9 ? C("#e1bd86") : C("#7d4f26"),
+    mlog.geo(new THREE.CylinderGeometry(4.8, 4.8, 18, 10), TRS(0, 0, 0, Math.PI / 2, 0, 0), null, (x, y, z, nx, ny, nz) =>
+      Math.abs(nz) > 0.5 ? C("#e1bd86") : C("#7d4f26"),
     );
     const logGeo = mlog.build();
     const mpaq = new Malla();
