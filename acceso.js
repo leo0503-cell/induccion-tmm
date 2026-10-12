@@ -63,7 +63,15 @@
         setTimeout(res, 4000);
       });
     }
-    if (!navigator.serviceWorker.controller) { location.reload(); await new Promise(() => {}); }
+    if (!navigator.serviceWorker.controller) {
+      /* Recarga una sola vez para que el service worker tome el control; si aun así no, avisa. */
+      let ya = false;
+      try { ya = sessionStorage.getItem("tmm-recargado") === "1"; sessionStorage.setItem("tmm-recargado", "1"); } catch (e) { ya = true; }
+      if (ya) throw new Error("navegador");
+      location.reload();
+      await new Promise(() => {});
+    }
+    try { sessionStorage.removeItem("tmm-recargado"); } catch (e) { /* nada */ }
     /* Si llega una versión nueva con la app abierta, recarga una vez (salvo a media lección o juego). */
     let recargando = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -98,7 +106,7 @@
       await swListo();
       const info = await (await fetch("llave.json", { cache: "no-cache" })).json();
       const guardada = await leerLlave();
-      if (guardada && (await abre(guardada, info))) return arranca();
+      if (guardada && (await abre(guardada, info))) return await arranca();
       if (guardada) await borrarLlave();
       muestraFormulario("");
       form.addEventListener("submit", async (e) => {
